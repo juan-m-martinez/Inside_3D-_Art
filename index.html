@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inside 3D ART</title>
+    <link rel="stylesheet" href="./css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+</head>
+
+<body>
+
+    <!-- =====================================================
+         MODAL DE BIENVENIDA
+         Reemplaze el prompt() de la entrega anterior.
+         Ahora el usuario ingresa su nombre directamente
+         en la página, sin interrupciones del navegador.
+         ===================================================== -->
+    <div class="modal-overlay" id="welcomeModal">
+        <div class="modal-box">
+            <div class="modal-logo"><img src="./img/logo-Inside.png" class="img-fluid logo" alt="Logo Inside 3D Art">
+            </div>
+            <h2 class="modal-title">¡Bienvenido a Inside 3D ART!</h2>
+            <p class="modal-subtitle">Ingresá tu nombre para comenzar</p>
+            <!-- Input donde el usuario escribe su nombre -->
+            <input type="text" id="inputNombreUsuario" class="modal-input" placeholder="Tu nombre aquí..."
+                maxlength="30">
+            <!-- Mensaje de error si no escribe nada -->
+            <p class="modal-error" id="welcomeError">Por favor ingresá tu nombre para continuar</p>
+            <button class="modal-btn" id="welcomeBtn">ENTRAR A LA TIENDA 🛒</button>
+        </div>
+    </div>
+
+    <!-- =====================================================
+         MODAL DE CONFIRMACIÓN - ELIMINAR PRODUCTO
+         Reemplaze el confirm() que usábamos antes.
+         Es más bonito y no interrumpe la navegación.
+         ===================================================== -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal-box modal-box--small">
+            <div class="modal-logo">🗑️</div>
+            <h3 class="modal-title" id="confirmTitle">¿Eliminar producto?</h3>
+            <p class="modal-subtitle" id="confirmMessage">¿Estás segura de eliminar este producto del carrito?</p>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn--secondary" id="confirmCancelar">CANCELAR</button>
+                <button class="modal-btn modal-btn--danger" id="confirmAceptar">ELIMINAR</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =====================================================
+         MODAL DE CHECKOUT (COMPRA EXITOSA)
+         Reemplaze los alert() del proceso de pago.
+         Muestra el resumen de compra de forma visual.
+         ===================================================== -->
+    <div class="modal-overlay" id="checkoutModal">
+        <div class="modal-box modal-box--checkout">
+            <div class="modal-logo" id="checkoutEmoji">✅</div>
+            <h3 class="modal-title" id="checkoutTitle">¡Compra realizada!</h3>
+            <!-- Aquí el JS va a escribir el resumen dinámicamente -->
+            <div id="checkoutBody" class="checkout-body"></div>
+            <button class="modal-btn" id="checkoutCerrar">CERRAR</button>
+        </div>
+    </div>
+
+    <!-- =====================================================
+         MODAL INFORMACIÓN DE DESCUENTO
+         Reemplaze el alert() del botón "Conocer más".
+         ===================================================== -->
+    <div class="modal-overlay" id="discountModal">
+        <div class="modal-box">
+            <div class="modal-logo">🎉</div>
+            <h3 class="modal-title">¡Oferta especial!</h3>
+            <div class="discount-modal-info">
+                <p>Obtené un <strong>10% de descuento</strong> en compras mayores a <strong>$60.000</strong></p>
+                <ul class="discount-list">
+                    <li>✓ Válido solo por hoy</li>
+                    <li>✓ Se aplica automáticamente al finalizar tu compra</li>
+                    <li>✓ Combinable con todas las ofertas</li>
+                </ul>
+            </div>
+            <button class="modal-btn" id="discountCerrar">¡ENTENDIDO!</button>
+        </div>
+    </div>
+
+    <!-- ENCABEZADO DE LA PÁGINA -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <!-- Logo de la tienda -->
+                <div class="logo">
+                    <span class="logo-icon"><a href="./index.html"><img src="./img/logo-Inside.png"
+                                class="img-fluid logo" alt="Logo Inside 3D Art"></a></span>
+                </div>
+                <!-- Navegación principal -->
+                <nav class="nav">
+                    <a href="#productos" class="nav-link active">Tienda</a>
+                    <a href="#ofertas" class="nav-link">Ofertas</a>
+                    <a href="./pages/nosotros.html" class="nav-link">Nosotros</a>
+                    <a href="#contacto" class="nav-link">Contactos</a>
+                </nav>
+
+                <!-- Barra de búsqueda -->
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Buscar productos..." class="search-input">
+                    <button class="search-btn">🔍</button>
+                </div>
+
+                <!-- Botón del carrito con saludo al usuario -->
+                <div class="header-right">
+                    <!-- Aquí aparece el saludo con el nombre del usuario -->
+                    <span class="user-greeting" id="userGreeting"></span>
+                    <button class="cart-btn" id="cartBtn">
+                        <span class="cart-icon">🛒</span>
+                        <span class="cart-count" id="cartCount">0</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- BANNER HERO CON IMAGEN PRINCIPAL -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">Impresiones 3D Profesionales</h1>
+            <p class="hero-subtitle">Modelos personalizados, accesorios y piezas funcionales en PLA y otros materiales
+            </p>
+        </div>
+    </section>
+
+    <!-- BANNER DE DESCUENTO -->
+    <section class="discount-banner">
+        <div class="container">
+            <div class="discount-content">
+                <div class="discount-badge">
+                    <span class="discount-percent">10%</span>
+                    <span class="discount-text">DE COMPRAS<br>MAYORES A $60.000</span>
+                </div>
+                <div class="discount-info">
+                    <h2>SOLO POR ESTA SEMANA</h2>
+                    <p>Aprovecha esta increíble oferta en todos nuestros productos</p>
+                    <button class="discount-btn" id="discountInfoBtn">CONOCER MÁS</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECCIÓN PRINCIPAL: CATÁLOGO DE PRODUCTOS -->
+    <main class="main" id="productos">
+        <div class="container">
+            <h2 class="section-title">Tienda Online Inside 3D Art</h2>
+
+            <!-- =====================================================
+                 FILTROS POR CATEGORÍA
+                 Botones para filtrar productos. El JS escucha
+                 el click en cada botón y filtra el array de productos.
+                 ===================================================== -->
+            <div class="filter-bar" id="filterBar">
+                <button class="filter-btn active" data-categoria="todos">Todos</button>
+                <button class="filter-btn" data-categoria="chopp">🍺 Jarra 3D Chopp 500ml</button>
+                <button class="filter-btn" data-categoria="lampara">💡​ Lámparas veladores 3D</button>
+                <button class="filter-btn" data-categoria="personalizados">😎​ Personalizados</button>
+            </div>
+
+            <!-- Aquí se cargan dinámicamente los productos desde JavaScript -->
+            <div class="products-grid" id="productsGrid">
+                <!-- Los productos se cargan con JS -->
+            </div>
+        </div>
+    </main>
+
+
+    <!-- SECCIÓN OFERTAS - FakeStore API -->
+    <section class="ofertas-section" id="ofertas">
+        <div class="container">
+            <h2 class="section-title">Ofertas Especiales</h2>
+            <p class="section-subtitle">Productos seleccionados con descuentos exclusivos</p>
+            <div class="ofertas-grid" id="ofertasGrid">
+                <!-- Cargado desde FakeStore API via JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- SECCIÓN TESTIMONIOS - JSONPlaceholder API -->
+    <section class="testimonios-section" id="testimonios">
+        <div class="container">
+            <h2 class="section-title section-title--light">Lo que dicen nuestros clientes</h2>
+            <div class="testimonios-grid" id="testimoniosGrid">
+                <!-- Cargado desde JSONPlaceholder API via JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- CARRITO LATERAL (SE ABRE AL HACER CLICK EN EL ICONO) -->
+    <aside class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h3 class="cart-title">
+                <span class="cart-icon-title">🛒</span>
+                Carrito
+                <!-- Muestra el nombre del usuario dentro del carrito -->
+                <span class="cart-username" id="cartUsername"></span>
+            </h3>
+            <button class="cart-close" id="cartClose">✕</button>
+        </div>
+
+        <!-- Notificación cuando se agrega/elimina un producto -->
+        <div class="cart-notification" id="cartNotification"></div>
+
+        <!-- Lista de productos en el carrito -->
+        <div class="cart-items" id="cartItems">
+            <!-- Los items del carrito se cargan con JS -->
+        </div>
+
+        <!-- Resumen de la compra -->
+        <div class="cart-summary">
+            <div class="summary-row">
+                <span>Subtotal:</span>
+                <span id="subtotal">$0.00</span>
+            </div>
+            <div class="summary-row">
+                <span>Descuentos:</span>
+                <span id="discount" class="discount-amount">$0.00</span>
+            </div>
+            <!-- Barra de progreso para el descuento -->
+            <div class="discount-progress-container" id="discountProgressContainer">
+                <p class="discount-progress-label" id="discountProgressLabel"></p>
+                <div class="discount-progress-bar">
+                    <div class="discount-progress-fill" id="discountProgressFill"></div>
+                </div>
+            </div>
+            <div class="summary-row total">
+                <span>Total a pagar:</span>
+                <span id="total">$0.00</span>
+            </div>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="cart-actions">
+            <button class="btn btn-secondary" id="vaciarCarritoBtn">VACIAR CARRITO</button>
+            <button class="btn btn-primary" id="checkoutBtn">COMPRAR AHORA</button>
+        </div>
+    </aside>
+
+    <!-- OVERLAY OSCURO CUANDO SE ABRE EL CARRITO O UN MODAL -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- FOOTER -->
+    <footer class="footer" id="contacto">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <a href="./index.html"><span class="logo-text">INSIDE 3D ART</span></a>
+                    </div>
+                    <p class="footer-text">Impresiones 3D Profesionales</p>
+                </div>
+
+                <div class="footer-section">
+                    <h4 class="footer-title">Acerca de</h4>
+                    <ul class="footer-links">
+                        <li><a href="./pages/nosotros.html">Nosotros</a></li>
+                        <li><a href="./pages/preguntas.html">Preguntas frecuentes</a></li>
+                        <li><a href="./pages/terminos.html">Términos y condiciones</a></li>
+                        <li><a href="./pages/politicas.html">Políticas de envío</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4 class="footer-title">Síguenos</h4>
+                    <div class="social-links">
+                        <a href="#facebook" class="social-link">📘</a>
+                        <a target="_blank" rel="noopener noreferrer" href="https://www.instagram.com/inside_3dart/"
+                            class="social-link">📷</a>
+                        <a href="#youtube" class="social-link">📺</a>
+                        <a href="#twitter" class="social-link">🐦</a>
+                    </div>
+                </div>
+
+                <div class="footer-section">
+                    <h4 class="footer-title">¿Necesitas ayuda?</h4>
+                    <p class="footer-contact">📧 <a href="/cdn-cgi/l/email-protection" class="__cf_email__"
+                            data-cfemail="45262a3737202a052a3722242b2c266b262a28">[email&#160;protected]</a></p>
+                    <p class="footer-contact">📱 +54 020 202 390</p>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>© 2025 Inside 3D Art | Todos los derechos reservados</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Lógica principal -->
+    <script src="./js/app.js"></script>
+</body>
+
+</html>
