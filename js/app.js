@@ -15,9 +15,9 @@ const estado = {
 // UTILIDADES
 // ============================================================
 
-// Formatea precio a dos decimales con símbolo $
+// Formatea precio en miles sin centavos con separador de miles
 function formatearPrecio(precio) {
-  return `$${Number(precio).toFixed(2)}`;
+  return `$${Math.round(precio * 1000).toLocaleString('es-AR')}`;
 }
 
 // Genera estrellas HTML según el rating
@@ -99,15 +99,15 @@ async function cargarOfertas() {
 function renderOfertas(productos) {
   const grid = document.getElementById("ofertasGrid");
 
-  // Usamos imágenes locales de estado.productos (verduras y frutas)
+  // Usamos imágenes locales de productos con badge "Oferta" o "Popular"
   // Los precios y ratings vienen de FakeStore API
-  const productosLocales = estado.productos.filter(p => p.categoria === "verduras" || p.categoria === "frutas");
-  const ofertasLocales = productosLocales.slice(0, 4);
+  const productosLocales = estado.productos.filter(p => p.badge === "Oferta" || p.badge === "Popular");
+  const ofertasLocales = productosLocales.length > 0 ? productosLocales.slice(0, 4) : estado.productos.slice(0, 4);
 
   const html = productos.map((p, i) => {
     const local = ofertasLocales[i % ofertasLocales.length];
-    const precioARS = (p.price * 950).toFixed(2);
-    const precioOriginal = (p.price * 950 * 1.15).toFixed(2);
+    const precioARS = Math.round(p.price * 950).toLocaleString('es-AR');
+    const precioOriginal = Math.round(p.price * 950 * 1.15).toLocaleString('es-AR');
     const descuento = Math.floor(Math.random() * 20) + 10;
 
     return `
@@ -137,15 +137,16 @@ async function cargarTestimonios() {
   const grid = document.getElementById("testimoniosGrid");
   if (!grid) return;
 
-  try {
-    const respuesta = await fetch("https://jsonplaceholder.typicode.com/users?_limit=4");
-    if (!respuesta.ok) throw new Error("JSONPlaceholder no disponible");
-    const usuarios = await respuesta.json();
-    renderTestimonios(usuarios);
-  } catch (error) {
-    grid.innerHTML = "";
-  }
+  renderTestimonios();
 }
+
+// Datos de testimonios
+const testimoniosData = [
+  { nombre: "Nahuel Riso", ciudad: "Argentina, La 24" },
+  { nombre: "Cristian Ferrari", ciudad: "La Matanza" },
+  { nombre: "Flavio Galimberti", ciudad: "Vicente Lopez" },
+  { nombre: "Joaquin Echeverri", ciudad: "Lanus" },
+];
 
 // Reviews predefinidas para cada usuario
 const reviewsTexto = [
@@ -155,12 +156,12 @@ const reviewsTexto = [
   "Los accesorios impresos son únicos y de gran calidad. La atención al cliente fue excelente, me asesoraron en todo el proceso.",
 ];
 
-function renderTestimonios(usuarios) {
+function renderTestimonios() {
   const grid = document.getElementById("testimoniosGrid");
   const avatarColores = ["#52b788", "#40916c", "#f4a261", "#2d6a4f"];
 
-  const html = usuarios.map((u, i) => {
-    const iniciales = u.name.split(" ").slice(0, 2).map((n) => n[0]).join("");
+  const html = testimoniosData.map((t, i) => {
+    const iniciales = t.nombre.split(" ").slice(0, 2).map((n) => n[0]).join("");
     return `
       <div class="testimonio-card">
         <div class="testimonio-avatar" style="background:${avatarColores[i]}">
@@ -169,8 +170,8 @@ function renderTestimonios(usuarios) {
         <div class="testimonio-estrellas">★★★★★</div>
         <p class="testimonio-texto">"${reviewsTexto[i]}"</p>
         <div class="testimonio-autor">
-          <strong>${u.name}</strong>
-          <span>${u.address.city}</span>
+          <strong>${t.nombre}</strong>
+          <span>${t.ciudad}</span>
         </div>
       </div>`;
   }).join("");
@@ -451,7 +452,7 @@ function procesarCompra() {
         ${descuento > 0 ? `<div class="checkout-row descuento"><span>Descuento 10%:</span><span>-${formatearPrecio(descuento)}</span></div>` : ""}
         <div class="checkout-row total-final"><span>TOTAL:</span><span>${formatearPrecio(total)}</span></div>
       </div>
-      <p class="checkout-msg">¡Gracias por tu compra, ${estado.usuario}! Te contactaremos pronto. 🌿</p>
+      <p class="checkout-msg">¡Gracias por tu compra, ${estado.usuario}! Te contactaremos pronto.</p>
     </div>`;
 
   abrirModal("checkoutModal");
@@ -464,7 +465,7 @@ function procesarCompra() {
 
 function iniciarBienvenida() {
   // Pre-carga el input con un nombre de ejemplo
-  document.getElementById("inputNombreUsuario").value = "vanesa";
+  document.getElementById("inputNombreUsuario").value = "";
 
   abrirModal("welcomeModal");
 
