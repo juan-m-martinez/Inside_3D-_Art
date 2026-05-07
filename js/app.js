@@ -35,7 +35,7 @@ function mostrarToast(mensaje, icono = "success") {
     icon: icono,
     title: mensaje,
     showConfirmButton: false,
-    timer: 2200,
+    timer: 2000,
     timerProgressBar: true,
     customClass: { popup: "swal-toast-custom" },
   });
@@ -77,7 +77,7 @@ async function cargarProductos() {
 }
 
 // ============================================================
-// API EXTERNA 1 - FakeStore API → Sección "Ofertas Especiales"
+// Productos locales para la sección "Ofertas Especiales"
 // ============================================================
 
 async function cargarOfertas() {
@@ -86,47 +86,120 @@ async function cargarOfertas() {
 
   grid.innerHTML = `<div class="loading-spinner"><span>Cargando ofertas...</span></div>`;
 
-  try {
-    const respuesta = await fetch("https://fakestoreapi.com/products?limit=4");
-    if (!respuesta.ok) throw new Error("FakeStore API no disponible");
-    const productos = await respuesta.json();
-    renderOfertas(productos);
-  } catch (error) {
-    grid.innerHTML = `<p class="api-error">No se pudieron cargar las ofertas en este momento.</p>`;
-  }
+  await new Promise(resolve => setTimeout(resolve, 500));
+
+  // Ofertas reales con descuentos fijos
+  const ofertas = [
+    {
+      id: 101,
+      imagen: "img/Diseño_jarratermica_afa.jpg",
+      nombre: "Jarra 3D Chopp 500ml Selección Argentina",
+      categoria: "chopp",
+      precioOriginal: "$25.000",
+      precioOferta: "$21.250",
+      precio: 21250,
+      descuento: 15,
+      rating: 4.8
+    },
+    {
+      id: 102,
+      imagen: "img/Diseño_jarratermica_fernet.jpg",
+      nombre: "Jarra 3D Chopp 500ml Fernet Branca",
+      categoria: "chopp",
+      precioOriginal: "$18.990",
+      precioOferta: "$15.192",
+      precio: 15192,
+      descuento: 20,
+      rating: 4.9
+    },
+    {
+      id: 103,
+      imagen: "img/Lampara_velador_boca.jpg",
+      nombre: "Lámpara Velador 3D Escudo Boca Juniors",
+      categoria: "lampara",
+      precioOriginal: "$16.990",
+      precioOferta: "$14.951",
+      precio: 14951,
+      descuento: 12,
+      rating: 4.5
+    },
+    {
+      id: 104,
+      imagen: "img/Lampara_velador_river_plate.jpg",
+      nombre: "Lámpara Velador 3D Escudo River Plate",
+      categoria: "lampara",
+      precioOriginal: "$11.000",
+      precioOferta: "$9.020",
+      precio: 9020,
+      descuento: 18,
+      rating: 4.6
+    },
+    {
+      id: 105,
+      imagen: "img/Diseño_jarratermica_lospiojos.jpg",
+      nombre: "Jarra 3D Chopp 500ml Los Piojos",
+      categoria: "chopp",
+      precioOriginal: "$20.000",
+      precioOferta: "$16.000",
+      precio: 16000,
+      descuento: 20,
+      rating: 4.6
+    },
+    {
+      id: 106,
+      imagen: "img/Diseño_jarratermica_unpocoderuid.jpg",
+      nombre: "Jarra 3D Chopp 500ml Un Poco de Ruido",
+      categoria: "chopp",
+      precioOriginal: "$12.500",
+      precioOferta: "$9.375",
+      precio: 9375,
+      descuento: 25,
+      rating: 4.5
+    }
+  ];
+
+  renderOfertas(ofertas);
 }
 
-function renderOfertas(productos) {
+function renderOfertas(ofertas) {
   const grid = document.getElementById("ofertasGrid");
 
-  // Usamos imágenes locales de productos con badge "Oferta" o "Popular"
-  // Los precios y ratings vienen de FakeStore API
-  const productosLocales = estado.productos.filter(p => p.badge === "Oferta" || p.badge === "Popular");
-  const ofertasLocales = productosLocales.length > 0 ? productosLocales.slice(0, 4) : estado.productos.slice(0, 4);
-
-  const html = productos.map((p, i) => {
-    const local = ofertasLocales[i % ofertasLocales.length];
-    const precioARS = Math.round(p.price * 950).toLocaleString('es-AR');
-    const precioOriginal = Math.round(p.price * 950 * 1.15).toLocaleString('es-AR');
-    const descuento = Math.floor(Math.random() * 20) + 10;
-
+  const html = ofertas.map((p) => {
     return `
       <div class="oferta-card">
-        <div class="oferta-badge">-${descuento}%</div>
-        <img src="${local.imagen}" alt="${local.nombre}" class="oferta-img" loading="lazy">
+        <div class="oferta-badge">-${p.descuento}%</div>
+        <img src="${p.imagen}" alt="${p.nombre}" class="oferta-img" loading="lazy">
         <div class="oferta-info">
-          <span class="oferta-categoria">${local.categoria}</span>
-          <h3 class="oferta-nombre">${local.nombre}</h3>
-          ${generarEstrellas(p.rating.rate)}
+          <span class="oferta-categoria">${p.categoria}</span>
+          <h3 class="oferta-nombre">${p.nombre}</h3>
+          ${generarEstrellas(p.rating)}
           <div class="oferta-precios">
-            <span class="precio-original">$${precioOriginal}</span>
-            <span class="precio-oferta">$${precioARS}</span>
+            <span class="precio-original">${p.precioOriginal}</span>
+            <span class="precio-oferta">${p.precioOferta}</span>
           </div>
+          <p class="oferta-promo">Llevando 2 del mismo artículo: -15% OFF</p>
+          <button class="btn-agregar-oferta" data-id="${p.id}" data-nombre="${p.nombre}" data-precio="${p.precio}" data-imagen="${p.imagen}">
+            + Agregar al carrito
+          </button>
         </div>
       </div>`;
   }).join("");
 
   grid.innerHTML = html;
+
+  // Eventos de botones de ofertas
+  grid.querySelectorAll(".btn-agregar-oferta").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const producto = {
+        id: Number(btn.dataset.id),
+        nombre: btn.dataset.nombre,
+        precio: Number(btn.dataset.precio),
+        imagen: btn.dataset.imagen,
+        unidad: "UNI"
+      };
+      agregarAlCarrito(producto);
+    });
+  });
 }
 
 // ============================================================
@@ -328,13 +401,24 @@ function guardarCarritoStorage() {
 // ============================================================
 
 function calcularTotales() {
-  const subtotal = estado.carrito.reduce(
-    (acc, item) => acc + item.precio * item.cantidad,
-    0
-  );
-  const umbralDescuento = 100;
-  const porcentajeDescuento = 0.1;
-  const descuento = subtotal >= umbralDescuento ? subtotal * porcentajeDescuento : 0;
+  const descuentoX2 = 0.15;
+  let subtotal = 0;
+  let descuento = 0;
+
+  estado.carrito.forEach((item) => {
+    const linea = item.precio * item.cantidad;
+    subtotal += linea;
+
+    if (item.cantidad >= 2) {
+      descuento += linea * descuentoX2;
+    }
+  });
+
+  const umbralDescuento = 60000;
+  const porcentajeExtra = 0.10;
+  const descuentoExtra = subtotal >= umbralDescuento ? subtotal * porcentajeExtra : 0;
+  descuento += descuentoExtra;
+
   const total = subtotal - descuento;
 
   return { subtotal, descuento, total, umbralDescuento };
@@ -360,11 +444,20 @@ function actualizarCarritoUI() {
         <p>Tu carrito está vacío</p>
       </div>`;
   } else {
-    cartItems.innerHTML = estado.carrito.map((item) => `
-      <div class="cart-item">
+    cartItems.innerHTML = estado.carrito.map((item) => {
+      const tieneDescuentoX2 = item.cantidad >= 2;
+      const totalLinea = item.precio * item.cantidad;
+      const descuentoLinea = tieneDescuentoX2 ? totalLinea * 0.15 : 0;
+      const totalFinal = totalLinea - descuentoLinea;
+
+      return `
+      <div class="cart-item ${tieneDescuentoX2 ? 'cart-item--descuento' : ''}">
         <img src="${item.imagen}" alt="${item.nombre}" class="cart-item-img">
         <div class="cart-item-info">
-          <p class="cart-item-name">${item.nombre}</p>
+          <p class="cart-item-name">
+            ${item.nombre}
+            ${tieneDescuentoX2 ? '<span class="badge-x2">-15% x2+</span>' : ''}
+          </p>
           <p class="cart-item-price">${formatearPrecio(item.precio)} / ${item.unidad}</p>
           <div class="cart-item-controls">
             <button class="qty-btn" data-id="${item.id}" data-delta="-1">−</button>
@@ -373,10 +466,12 @@ function actualizarCarritoUI() {
           </div>
         </div>
         <div class="cart-item-right">
-          <p class="cart-item-total">${formatearPrecio(item.precio * item.cantidad)}</p>
+          <p class="cart-item-total">${formatearPrecio(totalFinal)}</p>
+          ${tieneDescuentoX2 ? `<p class="cart-item-original">${formatearPrecio(totalLinea)}</p>` : ''}
           <button class="cart-item-delete" data-id="${item.id}">🗑️</button>
         </div>
-      </div>`).join("");
+      </div>`;
+    }).join("");
 
     // Eventos de cantidad y eliminar
     cartItems.querySelectorAll(".qty-btn").forEach((btn) => {
@@ -483,7 +578,7 @@ function iniciarBienvenida() {
     cerrarModal("welcomeModal");
     document.getElementById("userGreeting").textContent = `Hola, ${nombre} 👋`;
     document.getElementById("cartUsername").textContent = `de ${nombre}`;
-    mostrarToast(`¡Bienvenida, ${nombre}!`);
+    mostrarToast(`¡Bienvenido a Inside 3D Art, ${nombre}!`);
   });
 
   // Enter en el input también confirma
