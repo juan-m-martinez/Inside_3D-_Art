@@ -8,6 +8,7 @@ const estado = {
   carrito: JSON.parse(localStorage.getItem("of_carrito")) || [],
   productos: [],
   productosFiltrados: [],
+  ofertasIds: [101, 102, 103, 104, 105, 106],
   pendingDeleteId: null,
 };
 
@@ -197,9 +198,30 @@ function renderOfertas(ofertas) {
         imagen: btn.dataset.imagen,
         unidad: "UNI"
       };
-      agregarAlCarrito(producto);
+      agregarOfertaAlCarrito(producto);
     });
   });
+}
+
+function agregarOfertaAlCarrito(producto) {
+  const itemExistente = estado.carrito.find((i) => i.id === producto.id);
+
+  if (itemExistente) {
+    itemExistente.cantidad += 2;
+  } else {
+    estado.carrito.push({
+      id: producto.id,
+      nombre: producto.nombre,
+      precio: producto.precio,
+      imagen: producto.imagen,
+      unidad: producto.unidad,
+      cantidad: 2,
+    });
+  }
+
+  guardarCarritoStorage();
+  actualizarCarritoUI();
+  mostrarToast(`${producto.nombre} (x2) agregado al carrito 🛒`);
 }
 
 // ============================================================
@@ -370,6 +392,27 @@ function cambiarCantidad(id, delta) {
   const item = estado.carrito.find((i) => i.id === id);
   if (!item) return;
 
+  if (item.cantidad === 2 && delta === -1) {
+    Swal.fire({
+      icon: "warning",
+      title: "¡Atención!",
+      html: `Si bajás a <strong>1 unidad</strong> de <em>"${item.nombre}"</em>, perdés el <strong>descuento del 15%</strong>.`,
+      showCancelButton: true,
+      confirmButtonText: "Sí, quitar uno",
+      cancelButtonText: "Cancelar",
+      confirmButtonColor: "#e63946",
+      cancelButtonColor: "#6b7280",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        item.cantidad += delta;
+        guardarCarritoStorage();
+        actualizarCarritoUI();
+        mostrarToast("Descuento x2 eliminado", "info");
+      }
+    });
+    return;
+  }
+
   item.cantidad += delta;
   if (item.cantidad <= 0) {
     estado.carrito = estado.carrito.filter((i) => i.id !== id);
@@ -446,17 +489,23 @@ function actualizarCarritoUI() {
   } else {
     cartItems.innerHTML = estado.carrito.map((item) => {
       const tieneDescuentoX2 = item.cantidad >= 2;
+      const esProductoOferta = estado.ofertasIds.includes(item.id);
       const totalLinea = item.precio * item.cantidad;
       const descuentoLinea = tieneDescuentoX2 ? totalLinea * 0.15 : 0;
       const totalFinal = totalLinea - descuentoLinea;
 
+      // Si es de oferta pero perdió el descuento (cantidad < 2)
+      const perdioDescuento = esProductoOferta && !tieneDescuentoX2 && item.cantidad >= 1;
+      const precioConDescuento = totalLinea * 0.85;
+
       return `
-      <div class="cart-item ${tieneDescuentoX2 ? 'cart-item--descuento' : ''}">
+      <div class="cart-item ${tieneDescuentoX2 ? 'cart-item--descuento' : ''} ${perdioDescuento ? 'cart-item--perdio' : ''}">
         <img src="${item.imagen}" alt="${item.nombre}" class="cart-item-img">
         <div class="cart-item-info">
           <p class="cart-item-name">
             ${item.nombre}
             ${tieneDescuentoX2 ? '<span class="badge-x2">-15% x2+</span>' : ''}
+            ${perdioDescuento ? '<span class="badge-perdio">Sin descuento</span>' : ''}
           </p>
           <p class="cart-item-price">${formatearPrecio(item.precio)} / ${item.unidad}</p>
           <div class="cart-item-controls">
@@ -468,6 +517,7 @@ function actualizarCarritoUI() {
         <div class="cart-item-right">
           <p class="cart-item-total">${formatearPrecio(totalFinal)}</p>
           ${tieneDescuentoX2 ? `<p class="cart-item-original">${formatearPrecio(totalLinea)}</p>` : ''}
+          ${perdioDescuento ? `<p class="cart-item-original">${formatearPrecio(precioConDescuento)}</p>` : ''}
           <button class="cart-item-delete" data-id="${item.id}">🗑️</button>
         </div>
       </div>`;
